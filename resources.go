@@ -13,7 +13,10 @@
 // limitations under the License.
 package tracker
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Me Person
 
@@ -24,6 +27,63 @@ type Person struct {
 	ID       int    `json:"id"`
 	Email    string `json:"email"`
 }
+
+type Day string
+
+const (
+	DayMonday    Day = "Monday"
+	DayTuesday   Day = "Tuesday"
+	DayWednesday Day = "Wednesday"
+	DayThursday  Day = "Thursday"
+	DayFriday    Day = "Friday"
+	DaySaturday  Day = "Saturday"
+	DaySunday    Day = "Sunday"
+)
+
+type Date time.Time
+
+func (date *Date) UnmarshalJSON(content []byte) error {
+	s := string(content)
+
+	parsingError := func() error {
+		return fmt.Errorf(
+			"pivotal.Date.UnmarshalJSON: invalid date string: %s", content)
+	}
+
+	// Check whether the leading and trailing " is there.
+	if len(s) < 2 || s[0] != '"' || s[len(s)-1] != '"' {
+		return parsingError()
+	}
+
+	// Strip the leading and trailing "
+	s = s[:len(s)-1][1:]
+
+	// Parse the rest.
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return parsingError()
+	}
+
+	*date = Date(t)
+	return nil
+}
+
+func (date Date) MarshalJson() ([]byte, error) {
+	return []byte((time.Time)(date).Format("2006-01-02")), nil
+}
+
+type TimeZone struct {
+	OlsonName string `json:"olson_name,omitempty"`
+	Offset    string `json:"offset,omitempty"`
+}
+
+type AccountingType string
+
+const (
+	AccountingTypeUnbillable AccountingType = "unbillable"
+	AccountingTypeBillable   AccountingType = "billable"
+	AccountingTypeOverhead   AccountingType = "overhead"
+)
 
 type Project struct {
 	Id                           int            `json:"id"`

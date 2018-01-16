@@ -32,7 +32,7 @@ type ProjectClient struct {
 func (p ProjectClient) Project() (*Project, error) {
 	projectPath := fmt.Sprintf("/projects/%d", p.id)
 	var params url.Values
-	req, err := p.conn.CreateRequest(method, projectPath, params)
+	req, err := p.conn.CreateRequest("GET", projectPath, params)
 	if err != nil {
 		return nil, err
 	}
